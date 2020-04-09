@@ -7,7 +7,16 @@
 
 /*** Constants ***/
 
-
+/* The input part of the screen.
+ *  Looks something like this: 
+ *  -------------------------
+ *  Hi                      |
+ *  -------------------------
+ */
+#define INPUT_LINES_NUMBER (3)
+#define INPUT_LINE_FRAME_GRAPHIC ("-------------------------")
+#define INPUT_LINE_END_GRAPHIC ("|")
+#define INPUT_LINE_END_X (24)
 
 /*** Functions ***/  
 
@@ -29,4 +38,12 @@ bool create_empty_line(int *y, int max_y);
  * @return - if the function succeed.
  */
 bool print_message(int *y, int max_y, char *message);
+
+/** @brief - The function prints the input line to the screen.
+ *
+ * @param IN line_length - The message box x value.
+ *
+ * @return - if the function succeed. 
+ */
+bool print_input_line(int line_length);
 
