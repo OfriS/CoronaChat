@@ -19,7 +19,7 @@
  *
  * @note - if there wasn't message - return True with Null arguments.
  */
-bool get_message(char **input_buffer, size_t *input_size);
+bool UI__get_message(char **input_buffer, size_t *input_size);
 
 /** @brief - The function prints messages on the chat screen.
  *
@@ -28,5 +28,20 @@ bool get_message(char **input_buffer, size_t *input_size);
  *
  * @return - if the function succeed.
 */
-bool print_message(char *message, size_t message_length);
+bool UI__print_message(char *message, size_t message_length);
+
+/** @brief - The function initiates the output screen.
+ *
+ * @param OUT max_x - The window x length
+ * @param OUT max_y - The window y length
+ *
+ * @return - if the function succeed.
+*/
+bool UI__init_screen(int *max_x, int *max_y);
+
+/** @brief - The function close the new window.
+ *
+ * @return - if the function succeed.
+ */
+bool UI__destroy_screen(void);
 

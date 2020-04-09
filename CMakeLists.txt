@@ -8,6 +8,7 @@ include_directories(src)
 # Source files
 set(SOURCES
         src/main.c
+	src/ui/ui.c
         src/utils/linked_list/linked_list.c
         src/utils/linked_list/linked_list.h
         src/utils/linked_list/linked_list_internals.h)
@@ -15,3 +16,8 @@ set(SOURCES
 add_executable(CoronaChat ${SOURCES})
 
 target_compile_definitions(CoronaChat PRIVATE $<$<CONFIG:Debug>:DEBUG>)
+# Linking libraries
+target_link_libraries(CoronaChat -lncurses)
+
+
+
