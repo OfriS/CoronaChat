@@ -16,7 +16,7 @@
 #define INPUT_LINES_NUMBER (3)
 #define INPUT_LINE_FRAME_GRAPHIC ("-------------------------")
 #define INPUT_LINE_END_GRAPHIC ("|")
-#define INPUT_LINE_END_X (24)
+#define INPUT_LINE_END_X (sizeof(INPUT_LINE_FRAME_GRAPHIC) - sizeof(INPUT_LINE_END_GRAPHIC))
 
 /*** Functions ***/  
 
