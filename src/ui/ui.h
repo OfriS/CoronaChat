@@ -4,6 +4,8 @@
 
 #include <stdio.h>
 
+#include "../common/common.h"
+
 /*** Constants ***/
 
 
@@ -25,10 +27,11 @@ bool UI__get_message(char **input_buffer, size_t *input_size);
  *
  * @param IN message
  * @param IN message_length
+ * //TODO
  *
  * @return - if the function succeed.
 */
-bool UI__print_message(char *message, size_t message_length);
+bool UI__print_message(char *message, size_t message_length, int max_y, int *y);
 
 /** @brief - The function initiates the output screen.
  *
