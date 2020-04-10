@@ -7,21 +7,71 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "ui_internals.h"
+#include "../coronachat_status.h"
 
 /*** Functions ***/
 
-bool UI__get_message(char *input_buffer, size_t *input_size, int max_y)
+enum coronachat_status
+UI__get_message(char *input_buffer, int max_y, bool *is_done, size_t *char_counter)
 {
-	bool result = false;
+	enum coronachat_status status = CORORNACHAT_STATUS_UNINITIALIZED;
+	int function_result = C_FAILURE;
 
-	mvinnstr(max_y - 1, 0, input_buffer, g_max_message_length);
-	//TODO - check result
+	/* Validates the arguments. */
+	if ((NULL == is_done) ||
+		(NULL == input_buffer) ||
+		(NULL == char_counter)) {
+		status = CORORNACHAT_STATUS_UI_GET_MESSAGE_INVALID_PARAMETERS;
+        DEBUG_PRINT_WITH_ERRNO("UI__get_massage got invalid parameters :(\n");
+        goto l_cleanup;
+	}
 
-	result = true;
+	/* Read the input from the user. */
+	function_result = read(STDIN_FILENO, input_buffer, sizeof(*input_buffer));
+	if (sizeof(char) != function_result) {
+		status = CORORNACHAT_STATUS_UI_GET_MESSAGE_READ_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("Reading %d bytes instead of %d\n",
+                               function_result,
+                               sizeof(char));
+        goto l_cleanup;
+	}
+
+	/* Prints the input to the user in the appropriate place. */
+	function_result = mvprintw(max_y - 2, *char_counter, input_buffer);
+	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_GET_MESSAGE_PRINT_INPUT_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("mvprintw returned %d\n",
+                               function_result);
+        goto l_cleanup;
+	}
+
+	function_result = refresh();
+	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_GET_MESSAGE_REFRESH_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("refresh returned %d\n",
+                               function_result);
+        goto l_cleanup;
+	}
+	//TODO - use the print function?
+
+	++*char_counter;
+
+	/* Check if the message is done - '\n' is the last char or there is not enough place in the input box. */
+	if ((SEND_MESSAGE_CHAR == *input_buffer) ||
+		(INPUT_LINE_END_X <= *char_counter)) {
+		*is_done = true;
+	}
+	else {
+		*is_done = false;
+	}
+
+	/* End of function. */
+    status = CORORNACHAT_STATUS_SUCCESS;
 
 l_cleanup:
-	return result;
+	return status;
 }
 
 bool UI__print_message(char *message, size_t message_length, int max_y, int *y)
@@ -46,55 +96,73 @@ l_cleanup:
 	return result;
 }
 
-bool UI__init_screen(int *max_x, int *max_y)
+enum coronachat_status
+UI__init_screen(int *max_x, int *max_y)
 {
-	bool result = false;
+	enum coronachat_status status = CORORNACHAT_STATUS_UNINITIALIZED;
+	int function_result = C_FAILURE;
+	WINDOW *initscr_result = NULL;
 
-	initscr();
-	//TODO check result
+	initscr_result = initscr();
+	if (NULL == initscr_result) {
+		status = CORORNACHAT_STATUS_UI_INIT_SCREEN_INITSCR_FAILED;
+		DEBUG_PRINT_WITH_ERRNO("initscr failed\n");
+		goto l_cleanup;
+	}
 	
-	noecho();
+	function_result = noecho();
+	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_INIT_SCREEN_NOECHO_FAILED;
+		DEBUG_PRINT_WITH_ERRNO("noecho failed\n");
+		goto l_cleanup;
+	}
 
 	/* Do not see where the curs is. */
+	/* If the window does not support this option - do NOT fail.*/
 	curs_set(FALSE);
 
-	/* Clear the screen. */
-	clear();
-
-	/* Print the input box. */
-	//TODO
-	
 	/* Get the window sizes. */
+	/* Returns void. */
 	getmaxyx(stdscr, *max_y, *max_x);
 
 	/* The max string size. */
 	g_max_message_length = *max_y - MAX_NAME_LENGTH;
 
-	result = true;
+	/* Print the input box. */
+	status = print_input_box(*max_y);
+	if (CORORNACHAT_STATUS_SUCCESS != status) {
+		goto l_cleanup;
+	}
+
+	status = CORORNACHAT_STATUS_SUCCESS;
 
 l_cleanup:
-	return result;
+	return status;
 }
 
-bool UI__destroy_screen(void)
+enum coronachat_status
+UI__destroy_screen(void)
 {
-	bool result = false;
+	enum coronachat_status status = CORORNACHAT_STATUS_UNINITIALIZED;
 	int function_result = C_FAILURE;
 
 	function_result = clear();
 	if (C_SUCCESS != function_result) {
-		goto l_cleanup;
+		status = CORORNACHAT_STATUS_UI_DESTROY_SCREEN_CLEAR_FAILED;
+		DEBUG_PRINT_WITH_ERRNO("clear screen failed.\n");
 	}
 
 	function_result = endwin();
 	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_DESTROY_SCREEN_ENDWIN_FAILED;
+		DEBUG_PRINT_WITH_ERRNO("endwin failed\n");
 		goto l_cleanup;
 	}
 
-	result = true;
+	status = CORORNACHAT_STATUS_SUCCESS;
 
 l_cleanup:
-	return result;
+	return status;
 }
 
 bool create_empty_line(int y)
@@ -154,14 +222,57 @@ l_cleanup:
 	return result;
 }
 
-bool print_input_line(int line_length)
+enum coronachat_status
+print_input_box(int lines_number)
 {
-	bool result = false;
+	enum coronachat_status status = CORORNACHAT_STATUS_UNINITIALIZED;
+	int box_start_line = 0;
+	int function_result = C_FAILURE;
 
-	
+	box_start_line = lines_number - INPUT_LINES_NUMBER;
 
-	result = true;
+	if (0 >= box_start_line) {
+		status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_INVALID_PARAMETERS;
+		DEBUG_PRINT_WITH_ERRNO("The lines number is invalid or too small.\n");
+		goto l_cleanup;
+	}
+
+	/* Print the box up and down lines. */
+	function_result = mvprintw(box_start_line, 0, INPUT_LINE_FRAME_GRAPHIC);
+	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_PRINT_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("mvprintw returned %d\n",
+                               function_result);
+        goto l_cleanup;
+	}
+
+	function_result = mvprintw(box_start_line + 2, 0, INPUT_LINE_FRAME_GRAPHIC);
+	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_PRINT_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("mvprintw returned %d\n",
+                               function_result);
+        goto l_cleanup;
+	}
+
+	/* Print the closing input line. */
+	function_result = mvprintw(box_start_line + 1, INPUT_LINE_END_X, INPUT_LINE_END_GRAPHIC);
+	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_PRINT_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("mvprintw returned %d\n",
+                               function_result);
+        goto l_cleanup;
+	}
+
+	function_result = refresh();
+	if (C_SUCCESS != function_result) {
+		status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_REFRESH_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("refresh returned %d\n",
+                               function_result);
+        goto l_cleanup;
+	}
+
+	status = CORORNACHAT_STATUS_SUCCESS;
 
 l_cleanup:
-	return result;
+	return status;
 }

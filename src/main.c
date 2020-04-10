@@ -10,23 +10,25 @@ int main() {
     	int y;
 	int x;
 	int c_y = 0;
-	char message[5] = "hello";
+	char message[5] = {0};
 	int size = 5;
+	size_t counter = 0;
+	bool is_done = false;
 
 	printf("starts!\n");
 
-	sleep(1);
-
 	UI__init_screen(&x, &y);
 
+	/*
 	for (int i = 0; i < 10; i++) {
-		UI__print_message(message, 5, y, &c_y);
 		UI__print_message("world", 5, y, &c_y);
 	}
+	*/
 
-	UI__get_message(message,(size_t *) &size, y);
+	while (false == is_done) {
+		UI__get_message(message, y, &is_done, &counter);
+	}
 
-	sleep(2);
 
 	UI__destroy_screen();
 
