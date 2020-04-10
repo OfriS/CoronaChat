@@ -12,16 +12,18 @@
 
 /*** Functions ***/
 
-/** @brief - The function gets input from the client, if there is.
+/** @brief - The function gets input from the client, and prints it to him.
  *
  * @param OUT input_buffer
  * @param OUT input_size
+ * @param IN max_y - Number of lines in the current window size.
+ * @param OUT is_done - If the user done writing the current message.
  *
  * @return - if the function succeed.
  *
- * @note - if there wasn't message - return True with Null arguments.
+ * @note - please call the function when there is input from STDIN (after using select()).
  */
-bool UI__get_message(char **input_buffer, size_t *input_size);
+bool UI__get_message(char *input_buffer, size_t *input_size, int max_y, bool *is_done);
 
 /** @brief - The function prints messages on the chat screen.
  *

@@ -11,9 +11,12 @@
 
 /*** Functions ***/
 
-bool UI__get_message(char **input_buffer, size_t *input_size)
+bool UI__get_message(char *input_buffer, size_t *input_size, int max_y)
 {
 	bool result = false;
+
+	mvinnstr(max_y - 1, 0, input_buffer, g_max_message_length);
+	//TODO - check result
 
 	result = true;
 
