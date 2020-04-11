@@ -21,6 +21,12 @@ int main() {
 
 	UI__print_message("world\0", 6, y, messages);
 	UI__print_message("hello\0", 6, y, messages);
+	UI__print_message("a\0", 2, y, messages);
+	UI__print_message("g\0", 2, y, messages);
+	UI__print_message("world\0", 6, y, messages);
+	UI__print_message("hello\0", 6, y, messages);
+	UI__print_message("a\0", 2, y, messages);
+	UI__print_message("g\0", 2, y, messages);
 
 	while (false == is_done) {
 		UI__get_message(message, y, &is_done, &counter);

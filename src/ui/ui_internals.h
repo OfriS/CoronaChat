@@ -32,8 +32,7 @@
 #define INPUT_LINE_END_X (sizeof(INPUT_LINE_FRAME_GRAPHIC) - sizeof(INPUT_LINE_END_GRAPHIC))
 
 /* Colors */
-#define DEFAULT_COLOR (0)
-#define INPUT_COLOR (1)
+#define BOX_COLOR (1)
 
 /*** Globals ***/
 

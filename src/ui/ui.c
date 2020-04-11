@@ -150,6 +150,21 @@ UI__init_screen(int *max_x, int *max_y, struct LINKED_LIST_context **messages)
         goto l_cleanup;
     }
 
+    /* Init the colors. */
+    function_result = start_color();
+    if (C_SUCCESS != function_result) {
+        status = CORORNACHAT_STATUS_UI_INIT_SCREEN_COLORS_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("start_color failed\n");
+        goto l_cleanup;
+    }
+
+    function_result = init_pair(BOX_COLOR, COLOR_BLUE, COLOR_BLACK);
+    if (C_SUCCESS != function_result) {
+        status = CORORNACHAT_STATUS_UI_INIT_SCREEN_PAIR_COLORS_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("init_pair failed\n");
+        goto l_cleanup;
+    }
+
     status = CORORNACHAT_STATUS_SUCCESS;
 
 l_cleanup:
@@ -310,6 +325,15 @@ print_input_box(int lines_number)
         goto l_cleanup;
     }
 
+    /* Turn on the color change. */
+    function_result = attron(COLOR_PAIR(BOX_COLOR));
+    if (C_SUCCESS != function_result) {
+        status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_COLOR_ON_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("attron returned %d\n",
+                               function_result);
+        goto l_cleanup;
+    }
+
     /* Print the box up and down lines. */
     function_result = mvprintw(box_start_line, 0, INPUT_LINE_FRAME_GRAPHIC);
     if (C_SUCCESS != function_result) {
@@ -340,6 +364,15 @@ print_input_box(int lines_number)
     if (C_SUCCESS != function_result) {
         status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_REFRESH_FAILED;
         DEBUG_PRINT_WITH_ERRNO("refresh returned %d\n",
+                               function_result);
+        goto l_cleanup;
+    }
+
+    /* Turn off the box color change. */
+    function_result = attroff(COLOR_PAIR(BOX_COLOR));
+    if (C_SUCCESS != function_result) {
+        status = CORORNACHAT_STATUS_UI_PRINT_INPUT_BOX_COLOR_OFF_FAILED;
+        DEBUG_PRINT_WITH_ERRNO("attroff returned %d\n",
                                function_result);
         goto l_cleanup;
     }
