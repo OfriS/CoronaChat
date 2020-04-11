@@ -9,6 +9,7 @@
 
 #include "../common/common.h"
 #include "../coronachat_status.h"
+#include "../utils/linked_list/linked_list.h"
 
 /*** Constants ***/
 
@@ -34,27 +35,32 @@ UI__get_message(char *input_buffer, int max_y, bool *is_done, size_t *char_count
  *
  * @param IN message
  * @param IN message_length
- * //TODO
+ * @param IN max_y - The maximum lines number.
+ * @param IN OUT messages - The messages list.
  *
  * @return - if the function succeed.
 */
-bool UI__print_message(char *message, size_t message_length, int max_y, int *y);
+enum coronachat_status
+UI__print_message(char *message, size_t message_length, int max_y, struct LINKED_LIST_context *messages);
 
 /** @brief - The function initiates the output screen.
  *
  * @param OUT max_x - The window x length
  * @param OUT max_y - The window y length
+ * @param OUT messages - The chat messages.
  *
  * @return - if the function succeed.
 */
 enum coronachat_status
-UI__init_screen(int *max_x, int *max_y);
+UI__init_screen(int *max_x, int *max_y, struct LINKED_LIST_context **messages);
 
 /** @brief - The function close the new window.
+ *
+ * @param IN messages - The messages list to free.
  *
  * @return - if the function succeed.
  */
 enum coronachat_status
-UI__destroy_screen(void);
+UI__destroy_screen(struct LINKED_LIST_context *messages);
 
 #endif /* __CORONACHAT_UI_H__ */

@@ -9,13 +9,16 @@
 
 #include "./ui.h" //TODO - include <...>
 #include "../coronachat_status.h"
+#include "../utils/linked_list/linked_list.h"
 
 /*** Constants ***/
 
 /* The max name length. */
 #define MAX_NAME_LENGTH (8)
 
-#define SEND_MESSAGE_CHAR ('\r')
+/* The chars on the end of a message. */
+#define SEND_MESSAGE_CHAR 	('\r')
+#define END_MESSAGE_CHAR 	('\0')
 
 /* The input part of the screen.
  *  Looks something like this: 
@@ -39,13 +42,17 @@ int g_current_line = 0;
 
 /*** Functions ***/  
 
-/** @brief - The function moves all the lines one line up.
+/** @brief - The function add a new message to the messages list.
+ * 			 If there is not enough lines - it removes the oldest message.
  *
- * @param IN y - The number of the line that will be empty.
+ * @param IN max_lines - The max number of messages.
+ * @param IN new_message - The new message (followd by Null-terminator).
+ * @param IN OUT chat_messages - All of the chat messages.
  *
  * @return - if the function succeed.
  */
-bool create_empty_line(int y);
+enum coronachat_status
+add_message(int max_lines, char *new_message, struct LINKED_LIST_context *chat_messages);
 
 /** @brief - The function prints one-line message.
  *
@@ -55,7 +62,8 @@ bool create_empty_line(int y);
  *
  * @return - if the function succeed.
  */
-bool print_message(int *y, int max_y, char *message);
+enum coronachat_status
+print_all_lines(int lines_number, struct LINKED_LIST_context *messages);
 
 /** @brief - The function prints the input line box on the screen.
  *
@@ -65,5 +73,14 @@ bool print_message(int *y, int max_y, char *message);
  */
 enum coronachat_status
 print_input_box(int line_length);
+
+/** @brief - The function frees buffer.
+*
+* @param IN OUT buffer 
+*
+* @return - if the function succeed.
+*/
+enum coronachat_status
+heap_free(void *buffer);
 
 #endif /* __CORONACHAT_UI_INTERNALS_H__ */
